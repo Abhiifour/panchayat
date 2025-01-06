@@ -11,6 +11,9 @@ export default {
       animation: {
         gradient: 'gradient 15s ease infinite',
       },
+      colors:{
+        "primaryColor":"#16213e"
+      },
       keyframes: {
         gradient: {
           '0%': { backgroundPosition: '0% 50%' },

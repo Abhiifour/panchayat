@@ -4,16 +4,16 @@ import { motion } from "framer-motion";
 export default function Navbar() {
     //const socket = new WebSocket()
     return (
-        <div className="flex items-center justify-between max-w-[1200px] m-auto text-slate-200">
+        <div className="flex items-center justify-between max-w-[1200px] m-auto text-slate-200 font-sans">
             <motion.div
-                className="text-[32px] font-semibold"
+                className="text-[32px] font-bold -tracking-wider"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
             >
                 Panchayat
             </motion.div>
-            <div className="flex gap-4 text-[22px]">
+            <div className="flex gap-4 text-[18px]">
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
