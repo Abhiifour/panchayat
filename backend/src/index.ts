@@ -11,6 +11,7 @@ const wsServer = new WebSocket.Server({ server: httpServer });
 type User = {
   socket : WebSocket ;
   room : string ;
+  username:string;
 }
 
 let allSockets : User[] = []
@@ -27,21 +28,30 @@ wsServer.on('connection', (socket) => {
     //       //console.log(client)
     //     }
     // });
-    
+   
     const parsedMessage = JSON.parse(message)
-
+    console.log(parsedMessage)
     if(parsedMessage.type === "join"){
       allSockets.push({
         socket,
-        room:parsedMessage.payload.roomId
+        room:parsedMessage.payload.roomId,
+        username:parsedMessage.payload.username
       })
+
+      // const userRoom = allSockets.find((x) => x.socket == socket)
+      // const currRoom = allSockets.filter((x) => x.room == userRoom?.room)
+      // let usersInRoom = [];
+      // currRoom.forEach((function(x){
+      //   usersInRoom.push(x.username)
+      //   x.socket.send(JSON.stringify(usersInRoom))
+      // }))
     }
 
-    if(parsedMessage.type === 'chat'){
+    if(parsedMessage.type === "chat"){
       const userRoom = allSockets.find((x) => x.socket == socket)
       const currRoom = allSockets.filter((x) => x.room == userRoom?.room)
       currRoom.forEach((function(x){
-        x.socket.send(parsedMessage.payload.message)
+        x.socket.send(JSON.stringify(parsedMessage.payload))
       }))
     }
      

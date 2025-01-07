@@ -2,11 +2,22 @@
 
 import  {motion} from "framer-motion" 
 import { useState } from "react";
+import { nanoid } from "nanoid";
+import { useRouter } from "next/navigation";
+import { roomStore } from "@/store/roomStore";
 
+const randomId = function(length = 6) {
+    return Math.random().toString(36).substring(2, length+2);
+};
 
 export default function Landing(){
+    const updateRoomId = roomStore((state : any) => state.updateRoomId)
     const [isvisible, setIsVisible] = useState(false)
     const [isJoinVisible, setIsJoinVisible] = useState(false)
+    const [userRoom , setUserRoom] = useState("")
+    const roomId = randomId() 
+    const router = useRouter()
+
 
     return <div className="text-[54px] flex flex-col items-center justify-center text-center mt-48 text-slate-50 gap-10 font-sans">
         <motion.div
@@ -72,7 +83,7 @@ export default function Landing(){
                     transition={{ duration: 0.3 }}
                     className="text-slate-300 text-[18px] px-10 py-4 bg-slate-800 rounded-lg tracking-wider ease-in transition-all"
                 >
-                    Room Id : 43253
+                    Room Id : {roomId}
                 </motion.div>
             )
         }
@@ -91,8 +102,11 @@ export default function Landing(){
                    <input 
                         type="text" 
                         className="bg-slate-700 px-2 py-1 rounded-lg border-none outline-none text-[16px]" 
+                        onChange={(e) => setUserRoom(e.target.value)}
                     />
-                    <button className="bg-slate-900 px-4 py-1 text-[16px] text-center rounded-lg text-slate-300">Join</button>
+                    <button className="bg-slate-900 px-4 py-1 text-[16px] text-center rounded-lg text-slate-300" onClick={() => {router.push('/chats')
+                        updateRoomId(userRoom)
+                    }}>Join</button>
                    
                    </div>
                    <div className="text-[14px] text-slate-600">
