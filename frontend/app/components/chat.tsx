@@ -1,8 +1,10 @@
-export default function Chat({username,message}:{username:string,message:string}){
+import Image from "next/image";
+
+export default function Chat({username,message,avatar}:any){
     return (
         <div className="flex gap-2">
-            <div className="w-[40px] h-[40px] rounded-full bg-slate-500 mt-1">
-
+            <div className="w-[40px] h-[40px] rounded-full overflow-hidden ">
+                     <Image src={avatar} alt="avatar" width={40} height={40}  />
             </div>
             <div className="flex flex-col gap-1 ">
                 

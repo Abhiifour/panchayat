@@ -19,7 +19,7 @@ export default function Landing(){
     const router = useRouter()
 
 
-    return <div className="text-[54px] flex flex-col items-center justify-center text-center mt-48 text-slate-50 gap-10 font-sans">
+    return <div className="md:text-[54px] text-[24px] flex flex-col items-center justify-center text-center md:mt-48 mt-32 text-slate-50 gap-10 font-sans">
         <motion.div
         
             initial={{ y: 50, opacity: 0 }}
@@ -49,7 +49,7 @@ export default function Landing(){
         </motion.div>
         <div className="flex gap-4">
         <motion.div
-            className="w-[200px] py-2 text-[22px] border border-slate-400 rounded-full shadow-lg cursor-pointer text-slate-300 tracking-tight"
+            className="md:w-[200px] py-2 md:text-[22px] text-[16px] border border-slate-400 rounded-full shadow-lg cursor-pointer text-slate-300 tracking-tight px-4"
            
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -63,7 +63,7 @@ export default function Landing(){
         </motion.div>
 
         <motion.div
-            className="w-[200px] py-2 text-[22px] border border-slate-400 rounded-full shadow-lg cursor-pointer text-slate-300 tracking-tight"
+            className="md:w-[200px] py-2 md:text-[22px] text-[16px] border border-slate-400 rounded-full shadow-lg cursor-pointer text-slate-300 tracking-tight px-4"
            
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -81,7 +81,7 @@ export default function Landing(){
                     initial={{ opacity: 0, y: 1 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="text-slate-300 text-[18px] px-10 py-4 bg-slate-800 rounded-lg tracking-wider ease-in transition-all"
+                    className="text-slate-300 md:text-[18px]  text-[16px] px-10 md:py-4 py-2 bg-slate-800 rounded-lg tracking-wider ease-in transition-all"
                 >
                     Room Id : {roomId}
                 </motion.div>
@@ -95,13 +95,13 @@ export default function Landing(){
                     initial={{ opacity: 0, y: 1 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="text-slate-300 text-[18px] px-10 py-4 bg-slate-800 rounded-lg tracking-wider flex flex-col gap-2 items-center justify-center"
+                    className="text-slate-300 md:text-[18px] text-[16px] md:px-10 py-4 px-4 bg-slate-800 rounded-lg tracking-wider flex flex-col gap-2 items-center justify-center"
                 >
                    
                    <div className="gap-2 flex">
                    <input 
                         type="text" 
-                        className="bg-slate-700 px-2 py-1 rounded-lg border-none outline-none text-[16px]" 
+                        className="bg-slate-700 px-2 py-1 rounded-lg border-none outline-none md:text-[16px] text-[15px]" 
                         onChange={(e) => setUserRoom(e.target.value)}
                     />
                     <button className="bg-slate-900 px-4 py-1 text-[16px] text-center rounded-lg text-slate-300" onClick={() => {router.push('/chats')

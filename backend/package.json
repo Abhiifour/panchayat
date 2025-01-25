@@ -9,9 +9,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@prisma/client": "^6.2.1",
     "@types/express": "^5.0.0",
     "@types/ws": "^8.5.13",
     "express": "^4.21.2",
+    "prisma": "^6.2.1",
     "ws": "^8.18.0"
   }
 }

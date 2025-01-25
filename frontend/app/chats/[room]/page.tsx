@@ -11,7 +11,7 @@ import { roomStore } from '@/store/roomStore';
 import { userStore } from '@/store/userStore';
 
 export default function Page() {
-
+    let i = 0;
     const roomId = roomStore((state : any) => state.roomId) 
     const username = userStore((state : any) => state.username) 
     const avatar = userStore((state:any) => state.avatarUrl)
@@ -20,13 +20,15 @@ export default function Page() {
   //  const [newMessage,setNewMessage] = useState("")
     const [messages,setMessages] = useState<any []>([])
   //  const [myMessages,setMyMessages] = useState<any []>([])
+    const [usersInRoom , setUsersInRoom] = useState<string[]>([])
+    const [inRoom , setInRoom] = useState<number>(0)
     
     const[isOpen,setIsOpen] = useState(false)
     const[text,setText] = useState("")
     
     useEffect(() => {
 
-        const socket = new WebSocket(`ws://localhost:3000/`);
+        const socket = new WebSocket(`ws://localhost:3001/`);
 
         socket.onopen = () => {
             console.log('WebSocket connection opened');     
@@ -34,6 +36,8 @@ export default function Page() {
                 type:"join",
                 payload:{
                     roomId,
+                    username,
+                    avatarUrl : avatar
                 }
             }))   
             
@@ -41,15 +45,37 @@ export default function Page() {
 
         socket.onmessage = (event ) => {
             const data = JSON.parse(event.data)
-            setMessages((prevMessages) => [...prevMessages, data])
+            // console.log(data)
+
+            if(data.type === "chat"){
+                setMessages((prevMessages) => [...prevMessages, data.payload])
+
+            }
+            else if(data.type === "join"){
+                setUsersInRoom((prev) => [...prev,data.payload.joined])
+                setInRoom(data.payload.usersAvailable)
+            }
+            else if(data.type === "close"){
+                setUsersInRoom((prev) => [...prev,data.payload])
+            }
+
+            console.log(messages)
         };
 
         socket.onclose = () => {
             console.log('WebSocket connection closed');
+            socket.send(JSON.stringify({
+                type:"close",
+                payload:{
+                    roomId,
+                    username,
+                    avatarUrl : avatar
+                }
+            }))   
         };
 
         socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
+            console.log('WebSocket error:', error);
         };
         setSocket(socket)
         return () => {
@@ -64,25 +90,29 @@ export default function Page() {
                 roomId,
                 message:text,
                 username,
-                avatar
+                avatarUrl:avatar
             }
         }))  
     }
 
     
     return (
-        <div className='bg-primaryColor h-screen pt-8'>
+        <div className='w-full bg-primaryColor md:h-screen pt-8 px-4'>
         <Navbar/>
         <div className=' max-w-[1200px] m-auto font-sans mt-10'>
-           
-          <h1 className='text-slate-300 font-semibold text-[24px] tracking-wide'>Room <span className='font-thin'>#{roomId}</span></h1>
-           <div className='mt-2 flex gap-2'>
-           <div className='w-[700px] h-[500px] bg-slate-700 rounded-xl p-3 overflow-y-scroll'>
+           <div className='flex justify-between'>
+           <h1 className='text-slate-300 font-semibold md:text-[24px] text-[18px] tracking-wide'>Room <span className='font-thin'>#{roomId}</span></h1>
+            <div className='text-slate-300 md:text-[20px] text-[16px] tracking-wide md:hidden'>In room : {inRoom}</div>
+           </div>
+           <div className='mt-2 flex md:flex-row flex-col gap-2'>
+           <div className=' w-full md:w-[700px] h-[500px] bg-slate-700 rounded-xl p-3 overflow-y-scroll'>
             <div className='flex flex-col gap-2'>
-                {
+                { 
+                
+                messages.length === 0 ? <div className='text-slate-400 text-[16px] text-center py-10'>No messages yet</div> :
                     messages.map((x) => {
-                        if(x.username !== username) return <Chat username={x.username} message={x.message} key={nanoid(8)} />
-                        else return  <UserChat message={x.message} key={nanoid(8)}/>
+                        if(x.username !== username) return <Chat key={i++} avatar={x.avatarUrl} username={x.username} message={x.message}  />
+                        else return  <UserChat key={i++} message={x.message} avatar={x.avatarUrl} />
                     })
                 }
            
@@ -91,7 +121,7 @@ export default function Page() {
            </div>
           
 
-           <div className='w-[450px] h-[500px] bg-slate-900 rounded-lg flex flex-col justify-between p-2 '>
+           <div className='md:w-[450px] md:h-[500px]  bg-slate-900 rounded-lg flex md:flex-col flex-col-reverse justify-between p-2 '>
             {/* <div className='px-4'>
                 <h1 className='text-[20px] text-slate-500'>Joined</h1>
                 <div className='flex flex-col gap-2'>
@@ -99,6 +129,13 @@ export default function Page() {
                 </div>
                
             </div> */}
+            <div className='py-2 h-[300px] overflow-hidden overflow-y-scroll'>
+            {
+                usersInRoom.length === 0 ? <div className='text-slate-400 text-[16px]'>No users in room</div> :
+                usersInRoom.map((x) => <div key={x} className='text-slate-400 text-[16px] px-2'>{x}</div>)
+            }
+            </div>
+           
             <div className='py-4 '>
             <EmojiPicker open={isOpen} height={400} width={435} theme='dark' onEmojiClick={(e)=> setText((state)=> state + e.emoji)}/>
             </div>
