@@ -29,7 +29,7 @@ export default function Page() {
     
     useEffect(() => {
 
-        const socket = new WebSocket(`ws://panchayat-uoi2.onrender.com`);
+        const socket = new WebSocket(`wss://panchayat-uoi2.onrender.com`);
 
         socket.onopen = () => {
             console.log('WebSocket connection opened');     
