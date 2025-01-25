@@ -25,6 +25,7 @@ export default function Page() {
     
     const[isOpen,setIsOpen] = useState(false)
     const[text,setText] = useState("")
+    const theme = "dark"
     
     useEffect(() => {
 
@@ -137,7 +138,7 @@ export default function Page() {
             </div>
            
             <div className='py-4 '>
-            <EmojiPicker open={isOpen} height={400} width={435} theme='dark' onEmojiClick={(e)=> setText((state)=> state + e.emoji)}/>
+            <EmojiPicker open={isOpen} height={400} width={435} onEmojiClick={(e)=> setText((state)=> state + e.emoji)}/>
             </div>
            <div className="gap-2 flex py-1">
                     <textarea name="message" id="message"  className="bg-slate-700 px-2 py-3 rounded-lg border-none outline-none text-[15px] w-[85%] text-slate-400" value={text} onChange={(e) => setText(e.target.value)}></textarea>
