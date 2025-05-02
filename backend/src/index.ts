@@ -1,15 +1,33 @@
 import express, { json } from 'express';
 import { WebSocket } from 'ws';
-import { PrismaClient } from '@prisma/client';
+import { createClient } from "redis"
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient()
+// const prisma = new PrismaClient()
+
+
+
+const client = createClient ({
+  url : "rediss://default:AUEaAAIjcDE4ZDNmMDMxN2IzNjc0YmQ4YWFiMmU4ZGMyZGU2ZDJlZHAxMA@immense-parrot-16666.upstash.io:6379"
+});
+
+
 
 const app = express();
 app.use(express.json())
 
 const httpServer = app.listen(3001);
 
+async function connectClient(){
+  client.on("error", function(err) {
+    throw err;
+  });
+  await client.connect()
+  console.log("connected")
+}
+
 const wsServer = new WebSocket.Server({ server: httpServer });
+connectClient()
 
 type User = {
   socket : WebSocket ;
@@ -18,7 +36,20 @@ type User = {
   avatarUrl:string;
 }
 
+type Message = {
+  avatarUrl:string;
+  username:string;
+  message:string;
+}
+
+type ChatRoom = {
+  roomId ?: string;
+  users ? : User[];
+  messages? : Message[];
+}
+
 let allSockets : User[] = []
+let chatRooms : ChatRoom[] = []
 
 wsServer.on('connection', (socket) => {
   
@@ -43,6 +74,40 @@ wsServer.on('connection', (socket) => {
         avatarUrl:parsedMessage.payload.avatarUrl
       })
 
+      if(!chatRooms.some((x : ChatRoom) => x.roomId === parsedMessage.payload.roomId)){
+        chatRooms.push({
+          roomId: parsedMessage.payload.roomId,
+          users: allSockets
+            .filter((user) => user.room === parsedMessage.payload.roomId)
+            .map((user) => ({
+              socket: user.socket,
+              room: user.room,
+              username: user.username,
+              avatarUrl: user.avatarUrl,
+            })),
+          messages: [],
+        });
+      }
+      else{
+        chatRooms = chatRooms.map((room) =>
+          room.roomId === parsedMessage.payload.roomId
+            ? {
+                ...room,
+                users: allSockets
+                  .filter((user) => user.room === parsedMessage.payload.roomId)
+                  .map((user) => ({
+                    socket: user.socket,
+                    room: user.room,
+                    username: user.username,
+                    avatarUrl: user.avatarUrl,
+                  })),
+              }
+            : room
+        );
+      }
+
+     
+
       const userInRoom = allSockets.filter((x) => x.room === parsedMessage.payload.roomId)
 
       // addUserAndRoom({username:parsedMessage.payload.username,avatarUrl:parsedMessage.payload.avatarUrl,roomId:parsedMessage.payload.roomId})
@@ -52,7 +117,8 @@ wsServer.on('connection', (socket) => {
           type:"join",
           payload:{
             usersAvailable : userInRoom.length,
-            joined : `${parsedMessage.payload.username} has joined the room`
+            joined : chatRooms.find((y) => y.roomId === parsedMessage.payload.roomId)?.users || [],
+            prevChats : chatRooms.find((y) => y.roomId === parsedMessage.payload.roomId)?.messages || [],
           }
         }))
       })
@@ -64,6 +130,8 @@ wsServer.on('connection', (socket) => {
       //   usersInRoom.push(x.username)
       //   x.socket.send(JSON.stringify(usersInRoom))
       // }))
+
+      console.log('user in room',chatRooms.find((y) => y.roomId === parsedMessage.payload.roomId)?.users || [])
     }
 
     if(parsedMessage.type === "chat"){
@@ -74,6 +142,18 @@ wsServer.on('connection', (socket) => {
           type:"chat",
           payload:parsedMessage.payload}))
       }))
+
+      chatRooms.map((room) => {
+        if(room.roomId === userRoom?.room){
+          room.messages?.push({
+            avatarUrl:parsedMessage.payload.avatarUrl,
+            username:parsedMessage.payload.username,
+            message:parsedMessage.payload.message
+          })
+        }
+        
+      })
+
 
       // addChat({username:parsedMessage.payload.username,message:parsedMessage.payload.message,roomId:parsedMessage.payload.roomId})
 
@@ -106,115 +186,115 @@ wsServer.on('connection', (socket) => {
 })
 
 
-app.post('/', async(req,res) :Promise<any> =>{
-  const username = req.body.username
-  const avatarUrl = req.body.avatarUrl;
-  try {
-     await prisma.user.create({
-    data:{
-      username : username,
-      avatar:avatarUrl
-    }
-  })
+// app.post('/', async(req,res) :Promise<any> =>{
+//   const username = req.body.username
+//   const avatarUrl = req.body.avatarUrl;
+//   try {
+//      await prisma.user.create({
+//     data:{
+//       username : username,
+//       avatar:avatarUrl
+//     }
+//   })
   
-  } catch (error) {
-    return res.json({
-      msg:error
-    })
-  }
+//   } catch (error) {
+//     return res.json({
+//       msg:error
+//     })
+//   }
  
-  res.json({
-    msg:"hi there!!"
-  })
-})
+//   res.json({
+//     msg:"hi there!!"
+//   })
+// })
 
 
-async function addUserAndRoom({username,avatarUrl,roomId}:{username:string,avatarUrl:string,roomId:string,}){
+// async function addUserAndRoom({username,avatarUrl,roomId}:{username:string,avatarUrl:string,roomId:string,}){
 
-try {
+// try {
 
-  const userExists = await prisma.user.findFirst({
-    where:{
-      username:username
-    }
-  })
+//   const userExists = await prisma.user.findFirst({
+//     where:{
+//       username:username
+//     }
+//   })
 
-  if(!userExists){
+//   if(!userExists){
 
-    const user = await prisma.user.create({
-      data:{
-        username:username,
-        avatar:avatarUrl
-      }
-    })
+//     const user = await prisma.user.create({
+//       data:{
+//         username:username,
+//         avatar:avatarUrl
+//       }
+//     })
   
-    const userId = user.id
+//     const userId = user.id
   
-    const roomExists = await prisma.room.findFirst({
-      where:{
-        roomId:roomId
-      }
-    })
+//     const roomExists = await prisma.room.findFirst({
+//       where:{
+//         roomId:roomId
+//       }
+//     })
 
-    if(!roomExists){
-      await prisma.room.create({
-        data:{
-          roomId:roomId,
-          user:{
-            connect:{
-              id:userId
-            }
-          }
-        }
-      })
-    }
-    else {
-      await prisma.room.update({
-        where:{
-          roomId:roomId
-        },
-        data:{
-          user:{
-            connect:{
-              id:userId
-            }
-          }
-        }
-      })
-    }
+//     if(!roomExists){
+//       await prisma.room.create({
+//         data:{
+//           roomId:roomId,
+//           user:{
+//             connect:{
+//               id:userId
+//             }
+//           }
+//         }
+//       })
+//     }
+//     else {
+//       await prisma.room.update({
+//         where:{
+//           roomId:roomId
+//         },
+//         data:{
+//           user:{
+//             connect:{
+//               id:userId
+//             }
+//           }
+//         }
+//       })
+//     }
     
   
   
-  }
-  else {
-    return "user already exists"
-  }
-  console.log("user added")
-} catch (error) {
-  console.log(error)
-}
-}
+//   }
+//   else {
+//     return "user already exists"
+//   }
+//   console.log("user added")
+// } catch (error) {
+//   console.log(error)
+// }
+// }
 
 
-async function addChat({username,message,roomId}:any){
-  try {
-    await prisma.chat.create({
-      data:{
-        message:message,
-        user:{
-          connect:{
-            username:username
-          }
-        },
-        room:{
-          connect:{
-            roomId:roomId
-          }
-        }
-      }
-    })
-  } catch (error) {
-    console.log(error)
-  }
+// async function addChat({username,message,roomId}:any){
+//   try {
+//     await prisma.chat.create({
+//       data:{
+//         message:message,
+//         user:{
+//           connect:{
+//             username:username
+//           }
+//         },
+//         room:{
+//           connect:{
+//             roomId:roomId
+//           }
+//         }
+//       }
+//     })
+//   } catch (error) {
+//     console.log(error)
+//   }
 
-}
+// }
