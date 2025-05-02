@@ -1,1 +1,1 @@
-![alt text](image.png)
+![alt text](frontend/image.png)
