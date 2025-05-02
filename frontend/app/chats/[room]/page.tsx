@@ -10,6 +10,13 @@ import EmojiPicker from 'emoji-picker-react';
 import { roomStore } from '@/store/roomStore';
 import { userStore } from '@/store/userStore';
 
+type User = {
+    socket : WebSocket ;
+    room : string ;
+    username:string;
+    avatarUrl:string;
+}
+
 export default function Page() {
     let i = 0;
     const roomId = roomStore((state : any) => state.roomId) 
@@ -20,7 +27,7 @@ export default function Page() {
   //  const [newMessage,setNewMessage] = useState("")
     const [messages,setMessages] = useState<any []>([])
   //  const [myMessages,setMyMessages] = useState<any []>([])
-    const [usersInRoom , setUsersInRoom] = useState<string[]>([])
+    const [usersInRoom , setUsersInRoom] = useState<User[]>([])
     const [inRoom , setInRoom] = useState<number>(0)
     
     const[isOpen,setIsOpen] = useState(false)
@@ -29,7 +36,7 @@ export default function Page() {
     
     useEffect(() => {
 
-        const socket = new WebSocket(`wss://panchayat-uoi2.onrender.com`);
+        const socket = new WebSocket(`ws://localhost:3001`);
 
         socket.onopen = () => {
             console.log('WebSocket connection opened');     
@@ -53,8 +60,9 @@ export default function Page() {
 
             }
             else if(data.type === "join"){
-                setUsersInRoom((prev) => [...prev,data.payload.joined])
+                setUsersInRoom((prev) => [...data.payload.joined])
                 setInRoom(data.payload.usersAvailable)
+                setMessages((prev) => [...data.payload.prevChats])
             }
             else if(data.type === "close"){
                 setUsersInRoom((prev) => [...prev,data.payload])
@@ -133,7 +141,7 @@ export default function Page() {
             <div className='py-2 h-[300px] overflow-hidden overflow-y-scroll'>
             {
                 usersInRoom.length === 0 ? <div className='text-slate-400 text-[16px]'>No users in room</div> :
-                usersInRoom.map((x) => <div key={x} className='text-slate-400 text-[16px] px-2'>{x}</div>)
+                usersInRoom.map((x:User) => <div key={x.username} className='text-slate-400 text-[16px] px-2'>{x.username} has joined the room</div>)
             }
             </div>
            

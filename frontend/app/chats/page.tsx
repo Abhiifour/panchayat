@@ -103,6 +103,7 @@ export default function(){
                 onChange={(e) => updateUsername(e.target.value)}
                 type="text" 
                 className="bg-slate-700 px-2 py-1 rounded-lg border-none outline-none text-[16px] md:h-[40px] text-slate-400" 
+                onKeyDown={(e) => e.key === 'Enter' && router.push(`/chats/${roomId}`)}
             />
            </div>
 
@@ -116,7 +117,7 @@ export default function(){
                     </div>
                 </div>
             </div>
-            <button className="bg-slate-700 md:px-4 py-2 px-2 text-[16px] text-center mb-10 rounded-lg text-slate-400 md:w-[120px] w-[80px] hover:bg-slate-600 hover:text-slate-300 ease-in-out transition-all duration-200" onClick={() => 
+            <button className="bg-slate-700 md:px-4 py-2 px-2 text-[16px] text-center mb-10 rounded-lg text-slate-400 md:w-[120px] w-[80px] hover:bg-slate-600 hover:text-slate-300 ease-in-out transition-all duration-200"  onClick={() => 
             {router.push(`/chats/${roomId}`)
             // const socket = new WebSocket(`ws://localhost:3000/`);
 

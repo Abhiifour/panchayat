@@ -103,6 +103,7 @@ export default function Landing(){
                         type="text" 
                         className="bg-slate-700 px-2 py-1 rounded-lg border-none outline-none md:text-[16px] text-[15px]" 
                         onChange={(e) => setUserRoom(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && router.push(`/chats`)}
                     />
                     <button className="bg-slate-900 px-4 py-1 text-[16px] text-center rounded-lg text-slate-300" onClick={() => {router.push('/chats')
                         updateRoomId(userRoom)
